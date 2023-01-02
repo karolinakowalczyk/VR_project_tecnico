@@ -12,6 +12,7 @@ public class ControllerBehavior : MonoBehaviour
     private InputDevice leftHandDevice;
     private InputDevice hmdDevice;
     private bool spawnedAnObject = false;
+    private bool changedTransformMode = false;
     [SerializeField] private GameObject editPlane;
     [SerializeField] private GameObject editPoint;
     [SerializeField] private GameObject rightController;
@@ -81,6 +82,7 @@ public class ControllerBehavior : MonoBehaviour
         else if(triggerButtonValue == false)
         {
             lastControllerPosition = Vector3.zero;
+            changedTransformMode = false;
         }
 
     }
@@ -142,16 +144,17 @@ public class ControllerBehavior : MonoBehaviour
                     initialControllerRotation = deviceRotation;
                     initialObjectRotation = hit.transform.parent.transform.rotation;
                 }
-                Quaternion controllerAngularDifference = initialControllerRotation * Quaternion.Inverse(deviceRotation);
+                Quaternion controllerAngularDifference = initialControllerRotation * deviceRotation;
                 hit.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
             }
         }
     }
 
     void ChangeEditMode(float axisValue)
-    {
-        if(axisValue > 0)
+    {   
+        if(axisValue > 0 && !changedTransformMode)
         {
+            changedTransformMode = true;
             switch (currentMode)
             {
                 case transformMode.position:
@@ -165,7 +168,7 @@ public class ControllerBehavior : MonoBehaviour
                     break;
             }
         }
-        else if(axisValue < 0)
+        else if(axisValue < 0 && !changedTransformMode)
         {
             switch (currentMode)
             {
@@ -180,6 +183,11 @@ public class ControllerBehavior : MonoBehaviour
                     break;
             }
         }
+        else if(axisValue == 0)
+        {
+            changedTransformMode = false;
+        }
+
         var floor = GameObject.FindGameObjectWithTag("floor");
         switch (currentMode)
         {
