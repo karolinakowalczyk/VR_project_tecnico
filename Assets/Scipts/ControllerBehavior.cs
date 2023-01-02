@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -7,6 +9,7 @@ public class ControllerBehavior : MonoBehaviour
 {
 
     private InputDevice rightHandDevice;
+    private InputDevice leftHandDevice;
     private InputDevice hmdDevice;
     private bool spawnedAnObject = false;
     [SerializeField] private GameObject editPlane;
@@ -14,22 +17,24 @@ public class ControllerBehavior : MonoBehaviour
     [SerializeField] private GameObject rightController;
 
     private Vector3 lastControllerPosition = Vector3.zero;
+    private Quaternion initialControllerRotation = Quaternion.identity;
+    private Quaternion initialObjectRotation = Quaternion.identity;
 
     enum transformMode
     {
-        none = 0,
         position = 1,
         rotation = 2,
         scale = 3
     }
 
-    transformMode currentMode = transformMode.none;
+    transformMode currentMode = transformMode.position;
 
     // Start is called before the first frame update
     void Start()
     {
         List<InputDevice> inputDevices = new List<InputDevice>();
         InputDeviceCharacteristics rightControllerCharacteristics = InputDeviceCharacteristics.Right | InputDeviceCharacteristics.Controller;
+        InputDeviceCharacteristics leftControllerCharacteristics = InputDeviceCharacteristics.Left | InputDeviceCharacteristics.Controller;
         InputDeviceCharacteristics headMountedDisplayCharacteristics = InputDeviceCharacteristics.HeadMounted;
 
         InputDevices.GetDevicesWithCharacteristics(rightControllerCharacteristics, inputDevices);
@@ -43,8 +48,14 @@ public class ControllerBehavior : MonoBehaviour
         {
             hmdDevice = inputDevices[0];
         }
-        
-        
+
+        InputDevices.GetDevicesWithCharacteristics(leftControllerCharacteristics, inputDevices);
+        if (inputDevices.Count > 0)
+        {
+            leftHandDevice = inputDevices[0];
+        }
+
+
     }
 
     // Update is called once per frame
@@ -52,6 +63,9 @@ public class ControllerBehavior : MonoBehaviour
     {
         rightHandDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
         rightHandDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool triggerButtonValue);
+        
+        
+        
         if (primaryButtonValue == true && !spawnedAnObject) 
         {
             SpawnObject();
@@ -60,7 +74,7 @@ public class ControllerBehavior : MonoBehaviour
         {
             spawnedAnObject = false;
         }
-        else if(triggerButtonValue == true)
+        if(triggerButtonValue == true)
         {
             EditObject();
         }
@@ -75,6 +89,7 @@ public class ControllerBehavior : MonoBehaviour
     {
         Vector3 origin = rightController.transform.position;
         Vector3 direction = rightController.transform.forward;
+        rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out var rotationValue);
 
         RaycastHit hit;
         if(Physics.Raycast(origin, direction, out hit))
@@ -99,14 +114,18 @@ public class ControllerBehavior : MonoBehaviour
 
     void EditObject()
     {
+        leftHandDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 primaryAxisValue);
+
+        ChangeEditMode(primaryAxisValue.x);
+
         Vector3 origin = rightController.transform.position;
         Vector3 direction = rightController.transform.forward;
+        rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion deviceRotation);
 
         RaycastHit hit;
-        currentMode = transformMode.position;
-        if(Physics.Raycast(origin, direction, out hit))
+        if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
         {
-            if(hit.transform.parent.tag == "edit_plain" && currentMode == transformMode.position)
+            if(currentMode == transformMode.position)
             {
                 if(lastControllerPosition != Vector3.zero)
                 {
@@ -116,10 +135,30 @@ public class ControllerBehavior : MonoBehaviour
                 lastControllerPosition = origin;
 
             }
-            else if(hit.transform.tag == "floor")
+            else if(currentMode == transformMode.rotation)
             {
-                hit.transform.GetComponent<Renderer>().material.color = Color.red;
+                if(initialControllerRotation == Quaternion.identity)
+                {
+                    initialControllerRotation = deviceRotation;
+                    initialObjectRotation = hit.transform.parent.transform.rotation;
+                }
+                Quaternion controllerAngularDifference = initialControllerRotation * Quaternion.Inverse(deviceRotation);
+                hit.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
             }
+        }
+    }
+
+    void ChangeEditMode(float axisValue)
+    {
+        if(axisValue > 0)
+        {
+            transformMode nextValue = Enum.GetValues(typeof(transformMode)).Cast<transformMode>()
+        .SkipWhile(e => e != currentMode).Skip(1).First();
+        }
+        else if(axisValue < 0)
+        {
+            transformMode nextValue = Enum.GetValues(typeof(transformMode)).Cast<transformMode>()
+        .SkipWhile(e => e != currentMode).Skip(-1).First();
         }
     }
 }
