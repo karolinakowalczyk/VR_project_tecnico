@@ -22,9 +22,9 @@ public class ControllerBehavior : MonoBehaviour
 
     enum transformMode
     {
-        position = 1,
-        rotation = 2,
-        scale = 3
+        position = 0,
+        rotation = 1,
+        scale = 2
     }
 
     transformMode currentMode = transformMode.position;
@@ -152,13 +152,46 @@ public class ControllerBehavior : MonoBehaviour
     {
         if(axisValue > 0)
         {
-            transformMode nextValue = Enum.GetValues(typeof(transformMode)).Cast<transformMode>()
-        .SkipWhile(e => e != currentMode).Skip(1).First();
+            switch (currentMode)
+            {
+                case transformMode.position:
+                    currentMode = transformMode.rotation;
+                    break;
+                case transformMode.rotation:
+                    currentMode = transformMode.scale;
+                    break;
+                case transformMode.scale:
+                    currentMode = transformMode.position;
+                    break;
+            }
         }
         else if(axisValue < 0)
         {
-            transformMode nextValue = Enum.GetValues(typeof(transformMode)).Cast<transformMode>()
-        .SkipWhile(e => e != currentMode).Skip(-1).First();
+            switch (currentMode)
+            {
+                case transformMode.position:
+                    currentMode = transformMode.scale;
+                    break;
+                case transformMode.rotation:
+                    currentMode = transformMode.position;
+                    break;
+                case transformMode.scale:
+                    currentMode = transformMode.rotation;
+                    break;
+            }
+        }
+        var floor = GameObject.FindGameObjectWithTag("floor");
+        switch (currentMode)
+        {
+            case transformMode.position:
+                floor.GetComponent<Renderer>().material.color = Color.blue;
+                break;
+            case transformMode.rotation:
+                floor.GetComponent<Renderer>().material.color = Color.red;
+                break;
+            case transformMode.scale:
+                floor.GetComponent<Renderer>().material.color = Color.green;
+                break;
         }
     }
 }
