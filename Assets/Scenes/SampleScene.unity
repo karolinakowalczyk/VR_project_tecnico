@@ -247,8 +247,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 284350770}
-  - {fileID: 1547223684}
   - {fileID: 2096899341}
+  - {fileID: 1547223684}
   m_Father: {fileID: 1478997505}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2200,11 +2200,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1478997504}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 858c9e5eb162b3b488fbedb9017aba53, type: 3}
+  m_Script: {fileID: 11500000, guid: 51d9e9ca4838b0b4997ffd51adf26ae7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editPlane: {fileID: 3675596098709002272, guid: 2742d5628ad001e4bbd64792d7809776, type: 3}
-  editPoint: {fileID: 6952654557258544696, guid: 6542ceb5332d5394da6e0b2e0d3f478d, type: 3}
+  editPlane: {fileID: 3675596098709002272, guid: d7c1fad33ceb88d479e6cea4729b6bd3, type: 3}
+  editPoint: {fileID: 6952654557258544696, guid: 4ce3fbfd72037ec4c8b25f690a05dbe0, type: 3}
   rightController: {fileID: 2096899340}
 --- !u!1 &1523443635
 GameObject:
@@ -2330,12 +2330,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1547223683}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 154665723}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1547223685
 MonoBehaviour:
@@ -2663,7 +2663,7 @@ MonoBehaviour:
   m_UpdateTrackingType: 0
   m_EnableInputTracking: 1
   m_EnableInputActions: 1
-  m_ModelPrefab: {fileID: 2494075061571262563, guid: e2eba3924527e1a49b8333b3853ac3ef, type: 3}
+  m_ModelPrefab: {fileID: 2494075061571262563, guid: ad3dadf7aa9143648a92e1cad4f14d16, type: 3}
   m_ModelParent: {fileID: 0}
   m_Model: {fileID: 0}
   m_AnimateModel: 0
@@ -3277,12 +3277,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2096899340}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 154665723}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2096899342
 MonoBehaviour:
@@ -3610,7 +3610,7 @@ MonoBehaviour:
   m_UpdateTrackingType: 0
   m_EnableInputTracking: 1
   m_EnableInputActions: 1
-  m_ModelPrefab: {fileID: 2494075061571262563, guid: e2eba3924527e1a49b8333b3853ac3ef, type: 3}
+  m_ModelPrefab: {fileID: 2494075061571262563, guid: ad3dadf7aa9143648a92e1cad4f14d16, type: 3}
   m_ModelParent: {fileID: 0}
   m_Model: {fileID: 0}
   m_AnimateModel: 0

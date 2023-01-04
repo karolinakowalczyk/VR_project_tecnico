@@ -21,6 +21,9 @@ public class ControllerBehavior : MonoBehaviour
     private Quaternion initialControllerRotation = Quaternion.identity;
     private Quaternion initialObjectRotation = Quaternion.identity;
 
+    GameObject sourcePoint = null;
+    GameObject destinationPoint = null;
+
     enum transformMode
     {
         position = 0,
@@ -64,9 +67,10 @@ public class ControllerBehavior : MonoBehaviour
     {
         rightHandDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
         rightHandDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool triggerButtonValue);
-        
-        
-        
+        rightHandDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue);
+
+
+
         if (primaryButtonValue == true && !spawnedAnObject) 
         {
             SpawnObject();
@@ -85,6 +89,12 @@ public class ControllerBehavior : MonoBehaviour
             changedTransformMode = false;
         }
 
+
+        if (secondaryButtonValue == true)
+        {
+            unselectPoint();
+        }
+
     }
 
     void SpawnObject()
@@ -92,6 +102,7 @@ public class ControllerBehavior : MonoBehaviour
         Vector3 origin = rightController.transform.position;
         Vector3 direction = rightController.transform.forward;
         rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out var rotationValue);
+        
 
         RaycastHit hit;
         if(Physics.Raycast(origin, direction, out hit))
@@ -111,6 +122,7 @@ public class ControllerBehavior : MonoBehaviour
                 var point = Instantiate(editPoint, hit.point, Quaternion.identity);
                 point.transform.parent = hit.transform.parent.transform;
             }
+            
         }
     }
 
@@ -124,8 +136,26 @@ public class ControllerBehavior : MonoBehaviour
         Vector3 direction = rightController.transform.forward;
         rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion deviceRotation);
 
+
         RaycastHit hit;
-        if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
+
+        if (sourcePoint != null && Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
+        {
+            destinationPoint = hit.transform.gameObject;
+            if (destinationPoint == sourcePoint)
+            {
+                destinationPoint = null;
+                return;
+            }
+            destinationPoint.GetComponent<Renderer>().material.color = Color.green;
+        }
+        else if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
+        {
+            sourcePoint = hit.transform.gameObject;
+            sourcePoint.GetComponent<Renderer>().material.color = Color.red;
+        }
+
+        if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
         {
             if(currentMode == transformMode.position)
             {
@@ -148,6 +178,12 @@ public class ControllerBehavior : MonoBehaviour
                 hit.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
             }
         }
+    }
+
+    void unselectPoint()
+    {
+        sourcePoint.GetComponent<Renderer>().material.color = Color.white;
+        sourcePoint = null;
     }
 
     void ChangeEditMode(float axisValue)
