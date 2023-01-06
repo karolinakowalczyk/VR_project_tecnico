@@ -2206,6 +2206,7 @@ MonoBehaviour:
   editPlane: {fileID: 3675596098709002272, guid: d7c1fad33ceb88d479e6cea4729b6bd3, type: 3}
   editPoint: {fileID: 6952654557258544696, guid: 4ce3fbfd72037ec4c8b25f690a05dbe0, type: 3}
   rightController: {fileID: 2096899340}
+  lineRenderObject: {fileID: 0}
 --- !u!1 &1523443635
 GameObject:
   m_ObjectHideFlags: 0

@@ -21,8 +21,14 @@ public class ControllerBehavior : MonoBehaviour
     private Quaternion initialControllerRotation = Quaternion.identity;
     private Quaternion initialObjectRotation = Quaternion.identity;
 
-    GameObject sourcePoint = null;
-    GameObject destinationPoint = null;
+    GameObject sourcePoint = null; //public Transform origin;
+    GameObject destinationPoint = null; //public Transform destination;
+
+    //draw line
+
+    [SerializeField] private GameObject lineRenderObject;
+    private LineRenderer line;
+
 
     enum transformMode
     {
@@ -126,6 +132,15 @@ public class ControllerBehavior : MonoBehaviour
         }
     }
 
+
+    void drawLine(GameObject sourcePoint, GameObject destinationPoint)
+    {
+        line = lineRenderObject.GetComponent<LineRenderer>();
+        line.SetPosition(0, sourcePoint.transform.position);
+        line.SetPosition(1, destinationPoint.transform.position);
+        line.SetWidth(.45f, .45f);
+    }
+
     void EditObject()
     {
         leftHandDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 primaryAxisValue);
@@ -148,6 +163,8 @@ public class ControllerBehavior : MonoBehaviour
                 return;
             }
             destinationPoint.GetComponent<Renderer>().material.color = Color.green;
+            drawLine(sourcePoint, destinationPoint);
+
         }
         else if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
         {
