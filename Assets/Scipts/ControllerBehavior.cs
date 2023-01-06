@@ -17,6 +17,7 @@ public class ControllerBehavior : MonoBehaviour
     [SerializeField] private GameObject editPoint;
     [SerializeField] private GameObject rightController;
 
+    private GameObject editObject = null;
     private Vector3 lastControllerPosition = Vector3.zero;
     private Quaternion initialControllerRotation = Quaternion.identity;
     private Quaternion initialObjectRotation = Quaternion.identity;
@@ -83,6 +84,9 @@ public class ControllerBehavior : MonoBehaviour
         {
             lastControllerPosition = Vector3.zero;
             changedTransformMode = false;
+            editObject = null;
+            initialControllerRotation = Quaternion.identity;
+            initialObjectRotation = Quaternion.identity;
         }
 
     }
@@ -125,28 +129,50 @@ public class ControllerBehavior : MonoBehaviour
         rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion deviceRotation);
 
         RaycastHit hit;
-        if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
+        if(editObject != null)
         {
-            if(currentMode == transformMode.position)
+            if (currentMode == transformMode.position)
             {
-                if(lastControllerPosition != Vector3.zero)
+                if (lastControllerPosition != Vector3.zero)
                 {
                     Vector3 moveVector = origin - lastControllerPosition;
-                    hit.transform.parent.transform.position += moveVector;
+                    editObject.transform.position += moveVector;
                 }
                 lastControllerPosition = origin;
 
             }
-            else if(currentMode == transformMode.rotation)
+            else if (currentMode == transformMode.rotation)
             {
-                if(initialControllerRotation == Quaternion.identity)
+                if (initialControllerRotation == Quaternion.identity)
                 {
                     initialControllerRotation = deviceRotation;
-                    initialObjectRotation = hit.transform.parent.transform.rotation;
+                    initialObjectRotation = editObject.transform.rotation;
                 }
-                Quaternion controllerAngularDifference = initialControllerRotation * deviceRotation;
-                hit.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
+                Quaternion controllerAngularDifference = Quaternion.Inverse(deviceRotation) * initialControllerRotation;
+                editObject.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
             }
+            else if(currentMode == transformMode.scale)
+            {
+                if (lastControllerPosition != Vector3.zero)
+                {
+                    //Vector3 moveVector = origin - lastControllerPosition;
+                    //if(Vector3.Dot(direction, editObject.transform.forward) > 0)
+                    //{
+
+                    //}
+                    //var distance = moveVector.magnitude;
+                    //foreach (Transform child in editObject.transform)
+                    //{
+                    //    if (child.tag == "plane")
+                    //        child.localScale.x += distance;
+                    //}
+                }
+                lastControllerPosition = origin;
+            }
+        }
+        else if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
+        {
+            editObject = hit.transform.parent.transform.gameObject;
         }
     }
 
@@ -154,6 +180,7 @@ public class ControllerBehavior : MonoBehaviour
     {   
         if(axisValue > 0 && !changedTransformMode)
         {
+            lastControllerPosition = Vector3.zero;
             changedTransformMode = true;
             switch (currentMode)
             {
@@ -170,6 +197,8 @@ public class ControllerBehavior : MonoBehaviour
         }
         else if(axisValue < 0 && !changedTransformMode)
         {
+            lastControllerPosition = Vector3.zero;
+            changedTransformMode = true;
             switch (currentMode)
             {
                 case transformMode.position:
