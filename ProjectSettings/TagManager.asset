@@ -6,6 +6,8 @@ TagManager:
   tags:
   - edit_plain
   - floor
+  - point
+  - edit_point
   layers:
   - Default
   - TransparentFX
