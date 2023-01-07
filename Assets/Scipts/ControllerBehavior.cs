@@ -21,13 +21,10 @@ public class ControllerBehavior : MonoBehaviour
     private Quaternion initialControllerRotation = Quaternion.identity;
     private Quaternion initialObjectRotation = Quaternion.identity;
 
-    GameObject sourcePoint = null; //public Transform origin;
-    GameObject destinationPoint = null; //public Transform destination;
+    GameObject sourcePoint = null;
+    GameObject destinationPoint = null;
 
-    //draw line
-
-    [SerializeField] private GameObject lineRenderObject;
-    private LineRenderer line;
+    private LineRenderer lineRenderer;
 
 
     enum transformMode
@@ -135,10 +132,22 @@ public class ControllerBehavior : MonoBehaviour
 
     void drawLine(GameObject sourcePoint, GameObject destinationPoint)
     {
-        line = lineRenderObject.GetComponent<LineRenderer>();
-        line.SetPosition(0, sourcePoint.transform.position);
-        line.SetPosition(1, destinationPoint.transform.position);
-        line.SetWidth(.45f, .45f);
+        lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
+        lineRenderer.startColor = Color.black;
+        lineRenderer.endColor = Color.black;
+        lineRenderer.startWidth = 0.01f;
+        lineRenderer.endWidth = 0.01f;
+        lineRenderer.positionCount = 2;
+        lineRenderer.useWorldSpace = true;
+
+        lineRenderer.SetPosition(0, new Vector3(sourcePoint.transform.position.x, sourcePoint.transform.position.y, sourcePoint.transform.position.z));
+        lineRenderer.SetPosition(1, new Vector3(destinationPoint.transform.position.x, destinationPoint.transform.position.y, destinationPoint.transform.position.z));
+        
+        sourcePoint = null;
+        destinationPoint = null;
+
+        //Destroy(sourcePoint);
+        //Destroy(destinationPoint);
     }
 
     void EditObject()
@@ -156,6 +165,7 @@ public class ControllerBehavior : MonoBehaviour
 
         if (sourcePoint != null && Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
         {
+            
             destinationPoint = hit.transform.gameObject;
             if (destinationPoint == sourcePoint)
             {
@@ -164,12 +174,13 @@ public class ControllerBehavior : MonoBehaviour
             }
             destinationPoint.GetComponent<Renderer>().material.color = Color.green;
             drawLine(sourcePoint, destinationPoint);
-
         }
         else if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
         {
-            sourcePoint = hit.transform.gameObject;
-            sourcePoint.GetComponent<Renderer>().material.color = Color.red;
+            
+           sourcePoint = hit.transform.gameObject;
+           sourcePoint.GetComponent<Renderer>().material.color = Color.red;
+            
         }
 
         if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
