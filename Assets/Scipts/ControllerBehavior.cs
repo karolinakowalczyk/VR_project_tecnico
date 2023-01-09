@@ -145,10 +145,10 @@ public class ControllerBehavior : MonoBehaviour
             {
                 if (initialControllerRotation == Quaternion.identity)
                 {
-                    initialControllerRotation = deviceRotation;
+                    initialControllerRotation = rightController.transform.rotation;
                     initialObjectRotation = editObject.transform.rotation;
                 }
-                Quaternion controllerAngularDifference = Quaternion.Inverse(deviceRotation) * initialControllerRotation;
+                Quaternion controllerAngularDifference = Quaternion.Inverse(rightController.transform.rotation) * initialControllerRotation;
                 editObject.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
             }
             else if(currentMode == transformMode.scale)
