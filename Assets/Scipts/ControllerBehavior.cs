@@ -19,8 +19,6 @@ public class ControllerBehavior : MonoBehaviour
 
     private GameObject editObject = null;
     private Vector3 lastControllerPosition = Vector3.zero;
-    private Quaternion initialControllerRotation = Quaternion.identity;
-    private Quaternion initialObjectRotation = Quaternion.identity;
 
     enum transformMode
     {
@@ -85,8 +83,6 @@ public class ControllerBehavior : MonoBehaviour
             lastControllerPosition = Vector3.zero;
             changedTransformMode = false;
             editObject = null;
-            initialControllerRotation = Quaternion.identity;
-            initialObjectRotation = Quaternion.identity;
         }
 
     }
@@ -136,38 +132,14 @@ public class ControllerBehavior : MonoBehaviour
                 if (lastControllerPosition != Vector3.zero)
                 {
                     Vector3 moveVector = origin - lastControllerPosition;
-                    editObject.transform.position += moveVector;
+                    editObject.transform.position += moveVector * 1.25f;
                 }
                 lastControllerPosition = origin;
 
             }
             else if (currentMode == transformMode.rotation)
             {
-                if (initialControllerRotation == Quaternion.identity)
-                {
-                    initialControllerRotation = rightController.transform.rotation;
-                    initialObjectRotation = editObject.transform.rotation;
-                }
-                Quaternion controllerAngularDifference = Quaternion.Inverse(rightController.transform.rotation) * initialControllerRotation;
-                editObject.transform.parent.transform.rotation = controllerAngularDifference * initialObjectRotation;
-            }
-            else if(currentMode == transformMode.scale)
-            {
-                if (lastControllerPosition != Vector3.zero)
-                {
-                    //Vector3 moveVector = origin - lastControllerPosition;
-                    //if(Vector3.Dot(direction, editObject.transform.forward) > 0)
-                    //{
-
-                    //}
-                    //var distance = moveVector.magnitude;
-                    //foreach (Transform child in editObject.transform)
-                    //{
-                    //    if (child.tag == "plane")
-                    //        child.localScale.x += distance;
-                    //}
-                }
-                lastControllerPosition = origin;
+                editObject.transform.rotation = rightController.transform.rotation;
             }
         }
         else if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
@@ -188,9 +160,6 @@ public class ControllerBehavior : MonoBehaviour
                     currentMode = transformMode.rotation;
                     break;
                 case transformMode.rotation:
-                    currentMode = transformMode.scale;
-                    break;
-                case transformMode.scale:
                     currentMode = transformMode.position;
                     break;
             }
@@ -202,13 +171,10 @@ public class ControllerBehavior : MonoBehaviour
             switch (currentMode)
             {
                 case transformMode.position:
-                    currentMode = transformMode.scale;
+                    currentMode = transformMode.rotation;
                     break;
                 case transformMode.rotation:
                     currentMode = transformMode.position;
-                    break;
-                case transformMode.scale:
-                    currentMode = transformMode.rotation;
                     break;
             }
         }
@@ -225,9 +191,6 @@ public class ControllerBehavior : MonoBehaviour
                 break;
             case transformMode.rotation:
                 floor.GetComponent<Renderer>().material.color = Color.red;
-                break;
-            case transformMode.scale:
-                floor.GetComponent<Renderer>().material.color = Color.green;
                 break;
         }
     }
