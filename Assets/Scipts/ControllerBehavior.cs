@@ -20,11 +20,17 @@ public class ControllerBehavior : MonoBehaviour
     private GameObject editObject = null;
     private Vector3 lastControllerPosition = Vector3.zero;
 
+    GameObject sourcePoint = null;
+    GameObject destinationPoint = null;
+
+    private LineRenderer lineRenderer;
+    private float pointCooldown = 0.8f;
+    private float canPlacePoint = -1.0f;
+
     enum transformMode
     {
         position = 0,
         rotation = 1,
-        scale = 2
     }
 
     transformMode currentMode = transformMode.position;
@@ -63,9 +69,8 @@ public class ControllerBehavior : MonoBehaviour
     {
         rightHandDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
         rightHandDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool triggerButtonValue);
-        
-        
-        
+        rightHandDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue);
+
         if (primaryButtonValue == true && !spawnedAnObject) 
         {
             SpawnObject();
@@ -83,6 +88,11 @@ public class ControllerBehavior : MonoBehaviour
             lastControllerPosition = Vector3.zero;
             changedTransformMode = false;
             editObject = null;
+        }
+
+        if (secondaryButtonValue == true)
+        {
+            unselectPoint();
         }
 
     }
@@ -142,10 +152,25 @@ public class ControllerBehavior : MonoBehaviour
                 editObject.transform.rotation = rightController.transform.rotation;
             }
         }
+        else if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
+        {
+            if (sourcePoint == null && destinationPoint == null && Time.time > canPlacePoint)   
+            {
+                sourcePoint = hit.transform.gameObject;
+                sourcePoint.GetComponent<Renderer>().material.color = Color.red;
+            }
+            else if (sourcePoint != null && destinationPoint == null && hit.transform.gameObject != sourcePoint)
+            {
+                destinationPoint = hit.transform.gameObject;
+                destinationPoint.GetComponent<Renderer>().material.color = Color.green;
+                drawLine();
+            }
+        }
         else if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
         {
             editObject = hit.transform.parent.transform.gameObject;
         }
+        
     }
 
     void ChangeEditMode(float axisValue)
@@ -193,5 +218,43 @@ public class ControllerBehavior : MonoBehaviour
                 floor.GetComponent<Renderer>().material.color = Color.red;
                 break;
         }
+    }
+
+    void drawLine()
+    {
+        //lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
+        //lineRenderer.startColor = Color.black;
+        //lineRenderer.endColor = Color.black;
+        //lineRenderer.startWidth = 0.05f;
+        //lineRenderer.endWidth = 0.05f;
+        //lineRenderer.positionCount = 2;
+        //lineRenderer.useWorldSpace = true;
+
+        LineRenderer lineObj = new GameObject("Line").AddComponent<LineRenderer>();
+        lineObj.startColor = Color.black;
+        lineObj.endColor = Color.black;
+        lineObj.startWidth = 0.05f;
+        lineObj.endWidth = 0.05f;
+        lineObj.positionCount = 2;
+        lineObj.useWorldSpace = false;
+
+        lineObj.SetPosition(0, new Vector3(sourcePoint.transform.position.x, sourcePoint.transform.position.y, sourcePoint.transform.position.z));
+        lineObj.SetPosition(1, new Vector3(destinationPoint.transform.position.x, destinationPoint.transform.position.y, destinationPoint.transform.position.z));
+
+        lineObj.transform.parent = sourcePoint.transform;
+
+        sourcePoint.GetComponent<Renderer>().material.color = Color.white;
+        destinationPoint.GetComponent<Renderer>().material.color = Color.white;
+
+        sourcePoint = null;
+        destinationPoint = null;
+
+        canPlacePoint = Time.time + pointCooldown;
+    }
+
+    void unselectPoint()
+    {
+        sourcePoint.GetComponent<Renderer>().material.color = Color.white;
+        sourcePoint = null;
     }
 }
