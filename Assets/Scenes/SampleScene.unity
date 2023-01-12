@@ -2533,13 +2533,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1478997504}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc564ab889b05ab41bb080c1c61f096c, type: 3}
+  m_Script: {fileID: 11500000, guid: 858c9e5eb162b3b488fbedb9017aba53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editPlane: {fileID: 3675596098709002272, guid: f9675be54347a86449c7482ac06995cd, type: 3}
-  editPoint: {fileID: 6952654557258544696, guid: 4dc890b447b58734fb4fcac9b778247d, type: 3}
+  editPlane: {fileID: 3675596098709002272, guid: 2742d5628ad001e4bbd64792d7809776, type: 3}
+  editPoint: {fileID: 6952654557258544696, guid: 6542ceb5332d5394da6e0b2e0d3f478d, type: 3}
   rightController: {fileID: 2096899340}
-  UIPlane: {fileID: 210630736}
+  UIPlane: {fileID: 509649861299239821, guid: ce88bd7b3f5bc98449f998077f1ad01d, type: 3}
 --- !u!1 &1523443635
 GameObject:
   m_ObjectHideFlags: 0
@@ -2997,7 +2997,7 @@ MonoBehaviour:
   m_UpdateTrackingType: 0
   m_EnableInputTracking: 1
   m_EnableInputActions: 1
-  m_ModelPrefab: {fileID: 2494075061571262563, guid: 43ac2865d12ecd84eacc7236b772d783, type: 3}
+  m_ModelPrefab: {fileID: 2494075061571262563, guid: e2eba3924527e1a49b8333b3853ac3ef, type: 3}
   m_ModelParent: {fileID: 0}
   m_Model: {fileID: 0}
   m_AnimateModel: 0
@@ -3944,7 +3944,7 @@ MonoBehaviour:
   m_UpdateTrackingType: 0
   m_EnableInputTracking: 1
   m_EnableInputActions: 1
-  m_ModelPrefab: {fileID: 2494075061571262563, guid: 43ac2865d12ecd84eacc7236b772d783, type: 3}
+  m_ModelPrefab: {fileID: 2494075061571262563, guid: e2eba3924527e1a49b8333b3853ac3ef, type: 3}
   m_ModelParent: {fileID: 0}
   m_Model: {fileID: 0}
   m_AnimateModel: 0
