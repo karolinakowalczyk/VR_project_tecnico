@@ -7,7 +7,6 @@ using UnityEngine.XR;
 
 public class ControllerBehavior : MonoBehaviour
 {
-
     private InputDevice rightHandDevice;
     private InputDevice leftHandDevice;
     private InputDevice hmdDevice;
@@ -16,6 +15,7 @@ public class ControllerBehavior : MonoBehaviour
     [SerializeField] private GameObject editPlane;
     [SerializeField] private GameObject editPoint;
     [SerializeField] private GameObject rightController;
+    [SerializeField] private GameObject UIPlane;
 
     private GameObject editObject = null;
     private Vector3 lastControllerPosition = Vector3.zero;
@@ -60,8 +60,6 @@ public class ControllerBehavior : MonoBehaviour
         {
             leftHandDevice = inputDevices[0];
         }
-
-
     }
 
     // Update is called once per frame
@@ -75,15 +73,15 @@ public class ControllerBehavior : MonoBehaviour
         {
             SpawnObject();
         }
-        else if(primaryButtonValue == false)
+        else if (primaryButtonValue == false)
         {
             spawnedAnObject = false;
         }
-        if(triggerButtonValue == true)
+        if (triggerButtonValue == true)
         {
             EditObject();
         }
-        else if(triggerButtonValue == false)
+        else if (triggerButtonValue == false)
         {
             lastControllerPosition = Vector3.zero;
             changedTransformMode = false;
@@ -95,6 +93,22 @@ public class ControllerBehavior : MonoBehaviour
             unselectPoint();
         }
 
+        var floor = GameObject.FindGameObjectWithTag("floor");
+
+        switch (currentMode)
+        {
+            case transformMode.position:
+                UIPlane.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<UnityEngine.UI.Text>().text = "Position Mode";
+                UIPlane.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
+                break;
+            case transformMode.rotation:
+                UIPlane.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<UnityEngine.UI.Text>().text = "Rotation Mode";
+                UIPlane.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
+                break;
+            default:
+                floor.GetComponent<Renderer>().material.color = Color.black;
+                break;
+        }
     }
 
     void SpawnObject()
@@ -104,18 +118,20 @@ public class ControllerBehavior : MonoBehaviour
         rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out var rotationValue);
 
         RaycastHit hit;
-        if(Physics.Raycast(origin, direction, out hit))
+
+        if (Physics.Raycast(origin, direction, out hit))
         {
             if (hit.transform.tag == "floor")
             {
                 spawnedAnObject = true;
                 hmdDevice.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 targetPos);
+
                 Vector3 relativePos = targetPos - hit.point;
                 relativePos.y = 0;
                 Quaternion rotation = Quaternion.LookRotation(relativePos, Vector3.up);
                 Instantiate(editPlane, hit.point, rotation);
             }
-            else if(hit.transform.parent.tag == "edit_plain")
+            else if (hit.transform.parent.tag == "edit_plain")
             {
                 spawnedAnObject = true;
                 var point = Instantiate(editPoint, hit.point, Quaternion.identity);
@@ -145,7 +161,6 @@ public class ControllerBehavior : MonoBehaviour
                     editObject.transform.position += moveVector * 1.25f;
                 }
                 lastControllerPosition = origin;
-
             }
             else if (currentMode == transformMode.rotation)
             {
@@ -174,8 +189,8 @@ public class ControllerBehavior : MonoBehaviour
     }
 
     void ChangeEditMode(float axisValue)
-    {   
-        if(axisValue > 0 && !changedTransformMode)
+    {
+        if (axisValue > 0 && !changedTransformMode)
         {
             lastControllerPosition = Vector3.zero;
             changedTransformMode = true;
@@ -189,7 +204,7 @@ public class ControllerBehavior : MonoBehaviour
                     break;
             }
         }
-        else if(axisValue < 0 && !changedTransformMode)
+        else if (axisValue < 0 && !changedTransformMode)
         {
             lastControllerPosition = Vector3.zero;
             changedTransformMode = true;
@@ -203,20 +218,9 @@ public class ControllerBehavior : MonoBehaviour
                     break;
             }
         }
-        else if(axisValue == 0)
+        else if (axisValue == 0)
         {
             changedTransformMode = false;
-        }
-
-        var floor = GameObject.FindGameObjectWithTag("floor");
-        switch (currentMode)
-        {
-            case transformMode.position:
-                floor.GetComponent<Renderer>().material.color = Color.blue;
-                break;
-            case transformMode.rotation:
-                floor.GetComponent<Renderer>().material.color = Color.red;
-                break;
         }
     }
 
