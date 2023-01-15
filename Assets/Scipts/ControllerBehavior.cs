@@ -16,6 +16,10 @@ public class ControllerBehavior : MonoBehaviour
     [SerializeField] private GameObject editPoint;
     [SerializeField] private GameObject rightController;
     [SerializeField] private GameObject UIPlane;
+    [SerializeField] private Material PlaneMat;
+    [SerializeField] private Material PointMat;
+    [SerializeField] private Material LineMat;
+    [SerializeField] private Material HighlightMat;
 
     private GameObject editObject = null;
     private Vector3 lastControllerPosition = Vector3.zero;
@@ -26,6 +30,9 @@ public class ControllerBehavior : MonoBehaviour
     private LineRenderer lineRenderer;
     private float pointCooldown = 0.8f;
     private float canPlacePoint = -1.0f;
+    private GameObject prevHighlight = null;
+    private Quaternion initialControllerRotation;
+    private Quaternion initialPlaneRotation;
 
     enum transformMode
     {
@@ -68,6 +75,9 @@ public class ControllerBehavior : MonoBehaviour
         rightHandDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool primaryButtonValue);
         rightHandDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool triggerButtonValue);
         rightHandDevice.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue);
+        leftHandDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 primaryAxisValue);
+
+        ChangeEditMode(primaryAxisValue.x);
 
         if (primaryButtonValue == true && !spawnedAnObject) 
         {
@@ -84,8 +94,8 @@ public class ControllerBehavior : MonoBehaviour
         else if (triggerButtonValue == false)
         {
             lastControllerPosition = Vector3.zero;
-            changedTransformMode = false;
             editObject = null;
+            Highlight();
         }
 
         if (secondaryButtonValue == true)
@@ -98,16 +108,70 @@ public class ControllerBehavior : MonoBehaviour
         switch (currentMode)
         {
             case transformMode.position:
-                UIPlane.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<UnityEngine.UI.Text>().text = "Position Mode";
-                UIPlane.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
+                UIPlane.transform.GetChild(0).GetChild(1).GetComponent<TextMesh>().text = "Position Mode";
+                UIPlane.transform.GetChild(0).GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
                 break;
             case transformMode.rotation:
-                UIPlane.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<UnityEngine.UI.Text>().text = "Rotation Mode";
-                UIPlane.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
+                UIPlane.transform.GetChild(0).GetChild(1).GetComponent<TextMesh>().text = "Rotation Mode";
+                UIPlane.transform.GetChild(0).GetChild(0).GetComponent<Renderer>().material.color = Color.red;
                 break;
             default:
                 floor.GetComponent<Renderer>().material.color = Color.black;
                 break;
+        }
+        if(sourcePoint != null){
+            sourcePoint.GetComponent<Renderer>().material = PointMat;
+            sourcePoint.GetComponent<Renderer>().material.color = Color.red;
+        }
+    }
+
+    void changeMatChildren(GameObject obj, Material mat){
+        foreach (Transform child in obj.transform){
+            if (null == child || child.transform.tag != "highlightable")
+                continue;
+            
+            child.gameObject.GetComponent<Renderer>().material = mat;
+        }
+    }
+
+    void Highlight(){
+        Vector3 origin = rightController.transform.position;
+        Vector3 direction = rightController.transform.forward;
+        rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out var rotationValue);
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(origin, direction, out hit) && (hit.transform.parent.tag == "edit_plain" || hit.transform.parent.tag == "edit_point" || hit.transform.parent.tag == "Line")){
+
+            if(prevHighlight != null && !GameObject.ReferenceEquals(prevHighlight, hit)){
+                if(prevHighlight.transform.tag == "edit_plain"){
+                    changeMatChildren(prevHighlight, PlaneMat);
+                }else if(prevHighlight.transform.tag == "edit_point"){
+                    changeMatChildren(prevHighlight, PointMat);
+                }else if(prevHighlight.transform.tag == "Line"){
+                    changeMatChildren(prevHighlight, LineMat);
+                }
+            }
+
+            if(prevHighlight != null && sourcePoint != null && GameObject.ReferenceEquals(prevHighlight.transform.GetChild(0).gameObject, sourcePoint)){
+                prevHighlight = null;
+                return;
+            }
+
+            prevHighlight = hit.transform.parent.gameObject;
+            changeMatChildren(hit.transform.parent.gameObject, HighlightMat);
+            //hit.transform.gameObject.GetComponent<Renderer>().material = HighlightMat;
+        }else{
+            if(prevHighlight == null){
+                
+            }else
+            if(prevHighlight.transform.tag == "edit_plain"){
+                changeMatChildren(prevHighlight, PlaneMat);
+            }else if(prevHighlight.transform.tag == "edit_point"){
+                changeMatChildren(prevHighlight, PointMat);
+            }else if(prevHighlight.transform.tag == "Line"){
+                changeMatChildren(prevHighlight, LineMat);
+            }
         }
     }
 
@@ -129,7 +193,7 @@ public class ControllerBehavior : MonoBehaviour
                 Vector3 relativePos = targetPos - hit.point;
                 relativePos.y = 0;
                 Quaternion rotation = Quaternion.LookRotation(relativePos, Vector3.up);
-                Instantiate(editPlane, hit.point, rotation);
+                Instantiate(editPlane, hit.point + new Vector3(0,5,0), rotation);
             }
             else if (hit.transform.parent.tag == "edit_plain")
             {
@@ -142,10 +206,6 @@ public class ControllerBehavior : MonoBehaviour
 
     void EditObject()
     {
-        leftHandDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 primaryAxisValue);
-
-        ChangeEditMode(primaryAxisValue.x);
-
         Vector3 origin = rightController.transform.position;
         Vector3 direction = rightController.transform.forward;
         rightHandDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion deviceRotation);
@@ -164,7 +224,10 @@ public class ControllerBehavior : MonoBehaviour
             }
             else if (currentMode == transformMode.rotation)
             {
-                editObject.transform.rotation = rightController.transform.rotation;
+                Quaternion temp = Quaternion.Inverse(initialControllerRotation) * rightController.transform.rotation;
+                temp.x = -temp.x;
+                temp.z = -temp.z;
+                editObject.transform.rotation = initialPlaneRotation * temp;
             }
         }
         else if (Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_point")
@@ -184,6 +247,8 @@ public class ControllerBehavior : MonoBehaviour
         else if(Physics.Raycast(origin, direction, out hit) && hit.transform.parent.tag == "edit_plain")
         {
             editObject = hit.transform.parent.transform.gameObject;
+            initialControllerRotation = rightController.transform.rotation;
+            initialPlaneRotation = hit.transform.parent.transform.rotation;
         }
         
     }
